@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 
 export function Header() {
   return (
@@ -16,11 +16,10 @@ export function Header() {
 const HeaderContainer = styled.header`
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
 `
 
 const HeaderContent = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 1rem;
   display: flex;
   justify-content: space-between;
