@@ -6,7 +6,7 @@ export function Header() {
     <HeaderContainer>
       <HeaderContent>
         <Logo href="/">FoodieReviews</Logo>
-        <LoginButton href="/login">Login</LoginButton>
+        <LoginButton to="/login">Login</LoginButton>
       </HeaderContent>
     </HeaderContainer>
   )

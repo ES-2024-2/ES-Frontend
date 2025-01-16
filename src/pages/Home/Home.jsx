@@ -1,6 +1,6 @@
 import styled from 'styled-components'
-import { Header } from '../../components/Header'
-import { RestaurantCard } from '../../components/RestaurantCards'
+
+import RestaurantCard from '../../components/RestaurantCards'
 
 const restaurants = [
   { id: 1, name: "Hot Dog Caramelo", cuisine: "Brasileira", rating: 4.9, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0Nnpf-Js9Wt9EUV1KMj0LS9rpk_ENvHLZQ&s" },
@@ -9,42 +9,36 @@ const restaurants = [
   { id: 4, name: "Burger Podrão", cuisine: "Americana", rating: 4.0, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ1MRcxQCAx4r3lYWIpSfloyjCINEgAA_a8A&s" },
 ]
 
-export default function HomePage() {
+function HomePage() {
   return (
-    <PageContainer>
-      <Main>
-        <Title>Restaurantes Mais Bem Avaliados</Title>
-        <RestaurantGrid>
-          {restaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} {...restaurant} />
-          ))}
-        </RestaurantGrid>
-      </Main>
-    </PageContainer>
-  )
+    <Main>
+      <Title>Restaurantes Mais Bem Avaliados</Title>
+      <RestaurantGrid>
+        {restaurants.map((restaurant) => (
+          <RestaurantCard key={restaurant.id} {...restaurant} />
+        ))}
+      </RestaurantGrid>
+    </Main>
+  );
 }
 
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background-color: #fff7ed;
-`
+export default HomePage;
 
 const Main = styled.main`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
-`
+`;
 
 const Title = styled.h1`
   font-size: 2rem;
   font-weight: bold;
   color: #1f2937;
   margin-bottom: 1.5rem;
-`
+`;
 
 const RestaurantGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-`
-
+`;
