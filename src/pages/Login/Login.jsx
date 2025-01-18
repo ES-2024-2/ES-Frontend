@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -46,11 +47,17 @@ function LoginPage() {
         />
         <Button type="submit">Entrar</Button>
       </Form>
+      <RedirectLink>Não tem uma conta? <Link to="/register">Cadastre-se</Link> </RedirectLink>
     </LoginContainer>
   );
 }
 
 export default LoginPage;
+
+const RedirectLink = styled.p`
+  text-align: center;
+  margin-top: 1rem;
+`;
 
 const LoginContainer = styled.div`
   max-width: 400px;

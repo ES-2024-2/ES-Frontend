@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function RegisterPage() {
   const [nome, setNome] = useState('');
@@ -29,7 +30,7 @@ function RegisterPage() {
         senha,
       });
 
-      setSuccess('Cadastro realizado com sucesso!');
+      setSuccess('Cadastro realizado com sucesso! Você será redirecionado.');
       setTimeout(() => navigate('/login'), 2000); 
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao realizar cadastro.');
@@ -72,11 +73,18 @@ function RegisterPage() {
         />
         <Button type="submit">Cadastrar</Button>
       </Form>
+        <Message>Já tem uma conta? <Link to="/login">Faça login</Link></Message>
     </RegisterContainer>
   );
 }
 
 export default RegisterPage;
+
+const Message = styled.p`
+margin-top: 1rem;    
+font-size: 1rem;
+    text-align: center;
+`;
 
 const RegisterContainer = styled.div`
   max-width: 400px;

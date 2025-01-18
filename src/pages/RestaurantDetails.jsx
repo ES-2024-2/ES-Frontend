@@ -1,22 +1,28 @@
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 
 function RestaurantPage() {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
+  const [reviews, setReviews] = useState([]); 
+  const [newReview, setNewReview] = useState({ descricao: '', nota: '' });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     async function fetchRestaurant() {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:4000/restaurants/${id}`);
-        setRestaurant(response.data);
+        const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
+        const reviewsResponse = await axios.get(`http://localhost:4000/restaurants/${id}/reviews`);
+        setRestaurant(restaurantResponse.data);
+        setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []); 
       } catch (err) {
-        setError("Erro ao carregar os dados do restaurante.");
+        setError('Erro ao carregar os dados do restaurante.');
       } finally {
         setIsLoading(false);
       }
@@ -24,6 +30,24 @@ function RestaurantPage() {
 
     fetchRestaurant();
   }, [id]);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const reviewData = {
+        descricao: newReview.descricao,
+        nota: parseFloat(newReview.nota),
+        id_usuario: user.id_usuario,
+        id_restaurante: id,
+      };
+
+      await axios.post('http://localhost:4000/reviews', reviewData);
+      setReviews([...reviews, { ...reviewData, nome_usuario: user.nome }]); 
+      setNewReview({ descricao: '', nota: '' });
+    } catch (err) {
+      setError('Erro ao enviar avaliação.');
+    }
+  };
 
   if (isLoading) {
     return <p>Carregando...</p>;
@@ -46,38 +70,45 @@ function RestaurantPage() {
           <RestaurantCuisine>{restaurant.endereco}</RestaurantCuisine>
           <RestaurantRating>
             <Star>★</Star>
-            <RatingValue>{restaurant.numero_avaliacoes.toFixed(1)}</RatingValue>
+            <RatingValue>{restaurant.numero_avaliacoes}</RatingValue>
           </RestaurantRating>
         </RestaurantInfo>
       </RestaurantHeader>
 
       <Section>
-        <SectionTitle>Cardápio</SectionTitle>
-        {restaurant.menu && restaurant.menu.map((category, index) => (
-          <MenuCategory key={index}>
-            <MenuCategoryTitle>{category.category}</MenuCategoryTitle>
-            {category.items.map((item, itemIndex) => (
-              <MenuItem key={itemIndex}>
-                <MenuItemName>{item.name}</MenuItemName>
-                <MenuItemPrice>R$ {item.price}</MenuItemPrice>
-              </MenuItem>
-            ))}
-          </MenuCategory>
-        ))}
-      </Section>
-
-      <Section>
         <SectionTitle>Avaliações</SectionTitle>
-        {restaurant.reviews && restaurant.reviews.map((review, index) => (
+        {user && (
+          <ReviewForm onSubmit={handleReviewSubmit}>
+            <Input
+              type="text"
+              placeholder="Escreva sua avaliação"
+              value={newReview.descricao}
+              onChange={(e) => setNewReview({ ...newReview, descricao: e.target.value })}
+              required
+            />
+            <Input
+              type="number"
+              placeholder="Nota (1 a 5)"
+              value={newReview.nota}
+              onChange={(e) => setNewReview({ ...newReview, nota: e.target.value })}
+              required
+              min="1"
+              max="5"
+              step="0.1"
+            />
+            <Button type="submit">Enviar Avaliação</Button>
+          </ReviewForm>
+        )}
+        {reviews.map((review, index) => (
           <ReviewItem key={index}>
             <ReviewHeader>
-              <ReviewAuthor>{review.author}</ReviewAuthor>
+              <ReviewAuthor>{review.nome_usuario}</ReviewAuthor>
               <ReviewRating>
                 <Star>★</Star>
-                <RatingValue>{review.rating}</RatingValue>
+                <RatingValue>{review.nota}</RatingValue>
               </ReviewRating>
             </ReviewHeader>
-            <ReviewText>{review.text}</ReviewText>
+            <ReviewText>{review.descricao}</ReviewText>
           </ReviewItem>
         ))}
       </Section>
@@ -155,31 +186,32 @@ const SectionTitle = styled.h2`
   margin-bottom: 1rem;
 `;
 
-const MenuCategory = styled.div`
+const ReviewForm = styled.form`
+  display: flex;
+  flex-direction: column;
   margin-bottom: 1.5rem;
 `;
 
-const MenuCategoryTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #4b5563;
+const Input = styled.input`
   margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
 `;
 
-const MenuItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-`;
-
-const MenuItemName = styled.span`
+const Button = styled.button`
+  background-color: #f97316;
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
   font-size: 1rem;
-  color: #1f2937;
-`;
+  font-weight: 500;
+  cursor: pointer;
 
-const MenuItemPrice = styled.span`
-  font-size: 1rem;
-  color: #6b7280;
+  &:hover {
+    background-color: #ea580c;
+  }
 `;
 
 const ReviewItem = styled.div`
