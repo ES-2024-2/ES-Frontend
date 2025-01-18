@@ -1,163 +1,93 @@
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-
-const restaurants = [
-    {
-      id: 1,
-      name: "Hot Dog Caramelo",
-      cuisine: "Brasileira",
-      rating: 4.9,
-      imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0Nnpf-Js9Wt9EUV1KMj0LS9rpk_ENvHLZQ&s",
-      menu: [
-        {
-          category: "Entradas",
-          items: [
-            { name: "Pão de queijo", price: 12 },
-            { name: "Coxinha", price: 8 },
-          ],
-        },
-        {
-          category: "Pratos Principais",
-          items: [
-            { name: "Feijoada", price: 45 },
-            { name: "Moqueca de peixe", price: 55 },
-          ],
-        },
-      ],
-      reviews: [
-        { author: "Jhonny Spider", rating: 5, text: "Mto bom" },
-        { author: "Leandro", rating: 4, text: "Caaaaaroooo" },
-      ],
-    },
-    { id: 2, name: "Macarrão da tia", cuisine: "Italiana", rating: 4.2, imageUrl: "https://s2-receitas.glbimg.com/JAZaJrRJpVfXRP1BZwbAsUcuYLw=/0x0:1280x800/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2022/R/X/Lj3rwSQpm7BgzSEvJ1Mw/macarrao-simples-como-fazer.jpg",
-        menu: [
-            {
-              category: "Entradas",
-              items: [
-                { name: "Pão de queijo", price: 12 },
-                { name: "Coxinha", price: 8 },
-              ],
-            },
-            {
-              category: "Pratos Principais",
-              items: [
-                { name: "Feijoada", price: 45 },
-                { name: "Moqueca de peixe", price: 55 },
-              ],
-            },
-          ],
-        reviews: [
-            { author: "Jhonny Spider", rating: 5, text: "Mto bom" },
-            { author: "Leandro", rating: 4, text: "Caaaaaroooo" },
-        ],
-    },
-
-    { id: 3, name: "Sushi Caro", cuisine: "Japonesa", rating: 4.7, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaXA8gzWE_yYxvhJWUBYyqs3kJXuAd1UDstw&s",
-        menu: [
-            {
-              category: "Entradas",
-              items: [
-                { name: "Pão de queijo", price: 12 },
-                { name: "Coxinha", price: 8 },
-              ],
-            },
-            {
-              category: "Pratos Principais",
-              items: [
-                { name: "Feijoada", price: 45 },
-                { name: "Moqueca de peixe", price: 55 },
-              ],
-            },
-          ],
-        reviews: [
-            { author: "Jhonny Spider", rating: 5, text: "Mto bom" },
-            { author: "Leandro", rating: 4, text: "Caaaaaroooo" },
-        ],
-    },
-    { id: 4, name: "Burger Podrão", cuisine: "Americana", rating: 4.0, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ1MRcxQCAx4r3lYWIpSfloyjCINEgAA_a8A&s", 
-        menu: [
-            {
-              category: "Entradas",
-              items: [
-                { name: "Pão de queijo", price: 12 },
-                { name: "Coxinha", price: 8 },
-              ],
-            },
-            {
-              category: "Pratos Principais",
-              items: [
-                { name: "Feijoada", price: 45 },
-                { name: "Moqueca de peixe", price: 55 },
-              ],
-            },
-          ],
-        reviews: [
-            { author: "Jhonny Spider", rating: 5, text: "Mto bom" },
-            { author: "Leandro", rating: 4, text: "Caaaaaroooo" },
-        ],
-    },
-]
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function RestaurantPage() {
-    const { id } = useParams();
-    const restaurant = restaurants.find(r => r.id === parseInt(id));
-  
-    if (!restaurant) {
-      return <div>Restaurante não encontrado</div>;
+  const { id } = useParams();
+  const [restaurant, setRestaurant] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRestaurant() {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`http://localhost:4000/restaurants/${id}`);
+        setRestaurant(response.data);
+      } catch (err) {
+        setError("Erro ao carregar os dados do restaurante.");
+      } finally {
+        setIsLoading(false);
+      }
     }
-  
-    return (
-      <Main>
-        <RestaurantHeader>
-          <RestaurantImage src={restaurant.imageUrl} alt={restaurant.name} />
-          <RestaurantInfo>
-            <RestaurantName>{restaurant.name}</RestaurantName>
-            <RestaurantCuisine>{restaurant.cuisine}</RestaurantCuisine>
-            <RestaurantRating>
-              <Star>★</Star>
-              <RatingValue>{restaurant.rating.toFixed(1)}</RatingValue>
-            </RestaurantRating>
-          </RestaurantInfo>
-        </RestaurantHeader>
-  
-        <Section>
-          <SectionTitle>Cardápio</SectionTitle>
-          {restaurant.menu.map((category, index) => (
-            <MenuCategory key={index}>
-              <MenuCategoryTitle>{category.category}</MenuCategoryTitle>
-              {category.items.map((item, itemIndex) => (
-                <MenuItem key={itemIndex}>
-                  <MenuItemName>{item.name}</MenuItemName>
-                  <MenuItemPrice>R$ {item.price.toFixed(2)}</MenuItemPrice>
-                </MenuItem>
-              ))}
-            </MenuCategory>
-          ))}
-        </Section>
-  
-        <Section>
-          <SectionTitle>Avaliações</SectionTitle>
-          {restaurant.reviews.map((review, index) => (
-            <ReviewItem key={index}>
-              <ReviewHeader>
-                <ReviewAuthor>{review.author}</ReviewAuthor>
-                <ReviewRating>
-                  <Star>★</Star>
-                  <RatingValue>{review.rating.toFixed(1)}</RatingValue>
-                </ReviewRating>
-              </ReviewHeader>
-              <ReviewText>{review.text}</ReviewText>
-            </ReviewItem>
-          ))}
-        </Section>
-      </Main>
-    );
+
+    fetchRestaurant();
+  }, [id]);
+
+  if (isLoading) {
+    return <p>Carregando...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  if (!restaurant) {
+    return <p>Restaurante não encontrado.</p>;
+  }
+
+  return (
+    <Main>
+      <RestaurantHeader>
+        <RestaurantImage src={restaurant.imagem} alt={restaurant.id_restaurante} />
+        <RestaurantInfo>
+          <RestaurantName>{restaurant.id_restaurante}</RestaurantName>
+          <RestaurantCuisine>{restaurant.endereco}</RestaurantCuisine>
+          <RestaurantRating>
+            <Star>★</Star>
+            <RatingValue>{restaurant.numero_avaliacoes.toFixed(1)}</RatingValue>
+          </RestaurantRating>
+        </RestaurantInfo>
+      </RestaurantHeader>
+
+      <Section>
+        <SectionTitle>Cardápio</SectionTitle>
+        {restaurant.menu && restaurant.menu.map((category, index) => (
+          <MenuCategory key={index}>
+            <MenuCategoryTitle>{category.category}</MenuCategoryTitle>
+            {category.items.map((item, itemIndex) => (
+              <MenuItem key={itemIndex}>
+                <MenuItemName>{item.name}</MenuItemName>
+                <MenuItemPrice>R$ {item.price}</MenuItemPrice>
+              </MenuItem>
+            ))}
+          </MenuCategory>
+        ))}
+      </Section>
+
+      <Section>
+        <SectionTitle>Avaliações</SectionTitle>
+        {restaurant.reviews && restaurant.reviews.map((review, index) => (
+          <ReviewItem key={index}>
+            <ReviewHeader>
+              <ReviewAuthor>{review.author}</ReviewAuthor>
+              <ReviewRating>
+                <Star>★</Star>
+                <RatingValue>{review.rating}</RatingValue>
+              </ReviewRating>
+            </ReviewHeader>
+            <ReviewText>{review.text}</ReviewText>
+          </ReviewItem>
+        ))}
+      </Section>
+    </Main>
+  );
 }
-  
+
 export default RestaurantPage;
 
-
-  const Main = styled.main`
+const Main = styled.main`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;

@@ -2,16 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-function RestaurantCard({ id, name, cuisine, rating, imageUrl }) {
+function RestaurantCard({ id_restaurante, imagem, numero_avaliacoes, endereco }) {
   return (
-    <Card to={`/restaurant/${id}`}>
-      <Image src={imageUrl || "/placeholder.svg"} alt={name} />
+    <Card to={`/restaurant/${id_restaurante}`}>
+      <Image src={imagem} alt={endereco || "Sem endereço"} />
       <Content>
-        <Name>{name}</Name>
-        <Cuisine>{cuisine}</Cuisine>
+        <Name>{id_restaurante}</Name>
         <Rating>
           <Star>★</Star>
-          <RatingValue>{rating.toFixed(1)}</RatingValue>
+          <RatingValue>{numero_avaliacoes.toFixed(1)}</RatingValue>
         </Rating>
       </Content>
     </Card>
@@ -51,11 +50,6 @@ const Name = styled.h3`
   margin-bottom: 0.25rem;
 `;
 
-const Cuisine = styled.p`
-  font-size: 0.875rem;
-  color: #6b7280;
-`;
-
 const Rating = styled.div`
   display: flex;
   align-items: center;
@@ -72,4 +66,3 @@ const RatingValue = styled.span`
   font-weight: 500;
   color: #4b5563;
 `;
-
