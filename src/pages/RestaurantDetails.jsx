@@ -3,13 +3,15 @@ import styled from 'styled-components';
 import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Ícones
 
 function RestaurantPage() {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
   const [menu, setMenu] = useState([]);
-  const [reviews, setReviews] = useState([]); 
+  const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ descricao: '', nota: '' });
+  const [editReview, setEditReview] = useState(null); // Controle da edição
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useContext(AuthContext);
@@ -18,21 +20,10 @@ function RestaurantPage() {
     async function fetchRestaurant() {
       try {
         setIsLoading(true);
-  
-        const restaurantResponse = await axios.get(
-          `http://localhost:4000/restaurants/${id}`
-        );
-        const reviewsResponse = await axios.get(
-          `http://localhost:4000/reviews/restaurant/${id}`
-        );
-        const menuResponse = await axios.get(
-          `http://localhost:4000/menus/${id}`
-        );
-  
-        const avgResponse = await axios.get(
-          `http://localhost:4000/restaurants/${id}/avg`
-        );
-  
+        const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
+        const reviewsResponse = await axios.get(`http://localhost:4000/reviews/restaurant/${id}`);
+        const menuResponse = await axios.get(`http://localhost:4000/menus/${id}`);
+        const avgResponse = await axios.get(`http://localhost:4000/restaurants/${id}/avg`);
         setRestaurant({
           ...restaurantResponse.data,
           numero_avaliacoes: avgResponse.data.averageRating || 5,
@@ -40,12 +31,11 @@ function RestaurantPage() {
         setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []);
         setMenu(Array.isArray(menuResponse.data) ? menuResponse.data : []);
       } catch (err) {
-        setError("Erro ao carregar os dados do restaurante.");
+        setError('Erro ao carregar os dados do restaurante.');
       } finally {
         setIsLoading(false);
       }
     }
-  
     fetchRestaurant();
   }, [id]);
 
@@ -58,30 +48,46 @@ function RestaurantPage() {
         id_usuario: user.id_usuario,
         id_restaurante: id,
       };
-
       await axios.post('http://localhost:4000/reviews', reviewData);
-  
       setReviews([...reviews, { ...reviewData, nome: user.nome }]);
       setNewReview({ descricao: '', nota: '' });
     } catch (err) {
       setError('Erro ao enviar avaliação.');
     }
-  };  
+  };
 
-  if (isLoading) {
-    return <p>Carregando...</p>;
-  }
+  const handleUpdateReview = async (reviewId, updatedReview) => {
+    try {
+      await axios.put(`http://localhost:4000/reviews/${reviewId}`, updatedReview);
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id_avaliacao === reviewId ? { ...review, ...updatedReview } : review
+        )
+      );
+      setEditReview(null); // Finaliza a edição
+    } catch (err) {
+      setError('Erro ao atualizar avaliação.');
+    }
+  };
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await axios.delete(`http://localhost:4000/reviews/${reviewId}`);
+      setReviews((prevReviews) =>
+        prevReviews.filter((review) => review.id_avaliacao !== reviewId)
+      );
+    } catch (err) {
+      setError('Erro ao deletar avaliação.');
+    }
+  };
 
-  if (!restaurant) {
-    return <p>Restaurante não encontrado.</p>;
-  }
+  if (isLoading) return <p>Carregando...</p>;
+  if (error) return <p>{error}</p>;
+  if (!restaurant) return <p>Restaurante não encontrado.</p>;
 
   return (
     <Main>
+      {/* Informações do restaurante */}
       <RestaurantHeader>
         <RestaurantImage src={restaurant.imagem} alt={restaurant.id_restaurante} />
         <RestaurantInfo>
@@ -92,11 +98,13 @@ function RestaurantPage() {
             <RatingValue>
               {restaurant.numero_avaliacoes > 0
                 ? restaurant.numero_avaliacoes.toFixed(1)
-                : "Sem avaliações"}
+                : 'Sem avaliações'}
             </RatingValue>
           </RestaurantRating>
         </RestaurantInfo>
       </RestaurantHeader>
+
+      {/* Menu */}
       <Section>
         <SectionTitle>Menu</SectionTitle>
         {menu.length > 0 ? (
@@ -112,6 +120,8 @@ function RestaurantPage() {
           <NoMenuMessage>Esse restaurante ainda não possui um menu cadastrado.</NoMenuMessage>
         )}
       </Section>
+
+      {/* Avaliações */}
       <Section>
         <SectionTitle>Avaliações</SectionTitle>
         {user && (
@@ -137,8 +147,8 @@ function RestaurantPage() {
           </ReviewForm>
         )}
         {reviews.length > 0 ? (
-          reviews.map((review, index) => (
-            <ReviewItem key={index}>
+          reviews.map((review) => (
+            <ReviewItem key={review.id_avaliacao}>
               <ReviewHeader>
                 <ReviewAuthor>{review.nome}</ReviewAuthor>
                 <ReviewRating>
@@ -147,17 +157,107 @@ function RestaurantPage() {
                 </ReviewRating>
               </ReviewHeader>
               <ReviewText>{review.descricao}</ReviewText>
+              {user && user.id_usuario === review.id_usuario && (
+                <ReviewActions>
+                  <EditIcon
+                    onClick={() =>
+                      setEditReview(editReview && editReview.id === review.id_avaliacao ? null : {
+                        id: review.id_avaliacao,
+                        descricao: review.descricao,
+                        nota: review.nota,
+                      })
+                    }
+                  >
+                    <FaPencilAlt />
+                  </EditIcon>
+                  <DeleteIcon onClick={() => handleDeleteReview(review.id_avaliacao)}>
+                    <FaTrash />
+                  </DeleteIcon>
+                </ReviewActions>
+              )}
+              {editReview && editReview.id === review.id_avaliacao && (
+                <EditForm>
+                  <EditInput
+                    type="text"
+                    value={editReview.descricao}
+                    onChange={(e) =>
+                      setEditReview((prev) => ({ ...prev, descricao: e.target.value }))
+                    }
+                  />
+                  <EditInput
+                    type="number"
+                    value={editReview.nota}
+                    min="1"
+                    max="5"
+                    step="0.1"
+                    onChange={(e) =>
+                      setEditReview((prev) => ({ ...prev, nota: parseFloat(e.target.value) }))
+                    }
+                  />
+                  <Button2
+                    onClick={() =>
+                      handleUpdateReview(editReview.id, {
+                        descricao: editReview.descricao,
+                        nota: editReview.nota,
+                      })
+                    }
+                  >
+                    Salvar
+                  </Button2>
+                </EditForm>
+              )}
             </ReviewItem>
           ))
         ) : (
           <NoReviewsMessage>Esse restaurante ainda não possui avaliações.</NoReviewsMessage>
         )}
+
       </Section>
     </Main>
   );
 }
 
 export default RestaurantPage;
+
+const EditIcon = styled.div`
+  color: #3b82f6;
+  cursor: pointer;
+  &:hover {
+    color: #2563eb;
+  }
+`;
+
+const DeleteIcon = styled.div`
+  color: #ef4444;
+  cursor: pointer;
+  &:hover {
+    color: #dc2626;
+  }
+`;
+
+const EditForm = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+`;
+
+const EditInput = styled.input`
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+`;
+
+const Button2 = styled.button`
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  &:hover {
+    background-color: #2563eb;
+  }
+`;
 
 const Main = styled.main`
   max-width: 1200px;
@@ -320,4 +420,36 @@ const NoMenuMessage = styled.p`
 const MenuList = styled.ul`
   list-style: none;
   padding: 0;
+`;
+
+const ReviewActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+`;
+
+const EditButton = styled.button`
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #ef4444;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #dc2626;
+  }
 `;
