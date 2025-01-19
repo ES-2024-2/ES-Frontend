@@ -18,7 +18,7 @@ function RestaurantPage() {
       try {
         setIsLoading(true);
         const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
-        const reviewsResponse = await axios.get(`http://localhost:4000/restaurants/${id}/reviews`);
+        const reviewsResponse = await axios.get(`http://localhost:4000/reviews/restaurant/${id}`);
         setRestaurant(restaurantResponse.data);
         setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []); 
       } catch (err) {
@@ -42,12 +42,13 @@ function RestaurantPage() {
       };
 
       await axios.post('http://localhost:4000/reviews', reviewData);
-      setReviews([...reviews, { ...reviewData, nome_usuario: user.nome }]); 
+  
+      setReviews([...reviews, { ...reviewData, nome: user.nome }]);
       setNewReview({ descricao: '', nota: '' });
     } catch (err) {
       setError('Erro ao enviar avaliação.');
     }
-  };
+  };  
 
   if (isLoading) {
     return <p>Carregando...</p>;
@@ -99,19 +100,24 @@ function RestaurantPage() {
             <Button type="submit">Enviar Avaliação</Button>
           </ReviewForm>
         )}
-        {reviews.map((review, index) => (
-          <ReviewItem key={index}>
-            <ReviewHeader>
-              <ReviewAuthor>{review.nome_usuario}</ReviewAuthor>
-              <ReviewRating>
-                <Star>★</Star>
-                <RatingValue>{review.nota}</RatingValue>
-              </ReviewRating>
-            </ReviewHeader>
-            <ReviewText>{review.descricao}</ReviewText>
-          </ReviewItem>
-        ))}
+        {reviews.length > 0 ? (
+          reviews.map((review, index) => (
+            <ReviewItem key={index}>
+              <ReviewHeader>
+                <ReviewAuthor>{review.nome}</ReviewAuthor>
+                <ReviewRating>
+                  <Star>★</Star>
+                  <RatingValue>{review.nota.toFixed(1)}</RatingValue>
+                </ReviewRating>
+              </ReviewHeader>
+              <ReviewText>{review.descricao}</ReviewText>
+            </ReviewItem>
+          ))
+        ) : (
+          <NoReviewsMessage>Esse restaurante ainda não possui avaliações.</NoReviewsMessage>
+        )}
       </Section>
+
     </Main>
   );
 }
@@ -136,6 +142,13 @@ const RestaurantImage = styled.img`
   object-fit: cover;
   border-radius: 0.5rem;
   margin-right: 2rem;
+`;
+
+const NoReviewsMessage = styled.p`
+  font-size: 1rem;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 1rem;
 `;
 
 const RestaurantInfo = styled.div`
@@ -233,7 +246,8 @@ const ReviewHeader = styled.div`
 `;
 
 const ReviewAuthor = styled.span`
-  font-weight: 500;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #4b5563;
 `;
 
