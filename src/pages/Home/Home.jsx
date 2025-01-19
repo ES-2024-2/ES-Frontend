@@ -13,7 +13,7 @@ function HomePage() {
       try {
         setIsLoading(true);
         const response = await axios.get('http://localhost:4000/restaurants');
-        setRestaurants(response.data); // Passa os dados diretamente
+        setRestaurants(response.data); 
       } catch (err) {
         setError("Erro ao carregar os dados.");
       } finally {

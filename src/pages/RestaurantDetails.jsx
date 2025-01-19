@@ -18,19 +18,34 @@ function RestaurantPage() {
     async function fetchRestaurant() {
       try {
         setIsLoading(true);
-        const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
-        const reviewsResponse = await axios.get(`http://localhost:4000/reviews/restaurant/${id}`);
-        const menuResponse = await axios.get(`http://localhost:4000/menus/${id}`);
-        setRestaurant(restaurantResponse.data);
-        setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []); 
+  
+        const restaurantResponse = await axios.get(
+          `http://localhost:4000/restaurants/${id}`
+        );
+        const reviewsResponse = await axios.get(
+          `http://localhost:4000/reviews/restaurant/${id}`
+        );
+        const menuResponse = await axios.get(
+          `http://localhost:4000/menus/${id}`
+        );
+  
+        const avgResponse = await axios.get(
+          `http://localhost:4000/restaurants/${id}/avg`
+        );
+  
+        setRestaurant({
+          ...restaurantResponse.data,
+          numero_avaliacoes: avgResponse.data.averageRating || 5,
+        });
+        setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []);
         setMenu(Array.isArray(menuResponse.data) ? menuResponse.data : []);
       } catch (err) {
-        setError('Erro ao carregar os dados do restaurante.');
+        setError("Erro ao carregar os dados do restaurante.");
       } finally {
         setIsLoading(false);
       }
     }
-
+  
     fetchRestaurant();
   }, [id]);
 
@@ -74,7 +89,11 @@ function RestaurantPage() {
           <RestaurantCuisine>{restaurant.endereco}</RestaurantCuisine>
           <RestaurantRating>
             <Star>★</Star>
-            <RatingValue>{restaurant.numero_avaliacoes}</RatingValue>
+            <RatingValue>
+              {restaurant.numero_avaliacoes > 0
+                ? restaurant.numero_avaliacoes.toFixed(1)
+                : "Sem avaliações"}
+            </RatingValue>
           </RestaurantRating>
         </RestaurantInfo>
       </RestaurantHeader>

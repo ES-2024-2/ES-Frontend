@@ -1,8 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import axios from "axios";
 
-function RestaurantCard({ id_restaurante, imagem, numero_avaliacoes, endereco }) {
+function RestaurantCard({ id_restaurante, imagem, endereco }) {
+  const [averageRating, setAverageRating] = useState(0);
+
+  useEffect(() => {
+    async function fetchAverageRating() {
+      try {
+        const response = await axios.get(`http://localhost:4000/restaurants/${id_restaurante}/avg`);
+        setAverageRating(response.data.averageRating || 0);
+      } catch (error) {
+        console.error("Erro ao carregar a média de avaliações:", error);
+      }
+    }
+
+    fetchAverageRating();
+  }, [id_restaurante]);
+
   return (
     <Card to={`/restaurant/${id_restaurante}`}>
       <Image src={imagem} alt={endereco || "Sem endereço"} />
@@ -10,7 +26,7 @@ function RestaurantCard({ id_restaurante, imagem, numero_avaliacoes, endereco })
         <Name>{id_restaurante}</Name>
         <Rating>
           <Star>★</Star>
-          <RatingValue>{numero_avaliacoes.toFixed(1)}</RatingValue>
+          <RatingValue>{averageRating.toFixed(1)}</RatingValue>
         </Rating>
       </Content>
     </Card>
