@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Ícones
+import { FaPencilAlt, FaTrash } from 'react-icons/fa'; 
 
 function RestaurantPage() {
   const { id } = useParams();
@@ -11,7 +11,7 @@ function RestaurantPage() {
   const [menu, setMenu] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ descricao: '', nota: '' });
-  const [editReview, setEditReview] = useState(null); // Controle da edição
+  const [editReview, setEditReview] = useState(null); 
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useContext(AuthContext);
@@ -51,11 +51,12 @@ function RestaurantPage() {
       await axios.post('http://localhost:4000/reviews', reviewData);
       setReviews([...reviews, { ...reviewData, nome: user.nome }]);
       setNewReview({ descricao: '', nota: '' });
+      await updateRestaurantAverage(); 
     } catch (err) {
       setError('Erro ao enviar avaliação.');
     }
   };
-
+  
   const handleUpdateReview = async (reviewId, updatedReview) => {
     try {
       await axios.put(`http://localhost:4000/reviews/${reviewId}`, updatedReview);
@@ -64,11 +65,12 @@ function RestaurantPage() {
           review.id_avaliacao === reviewId ? { ...review, ...updatedReview } : review
         )
       );
-      setEditReview(null); // Finaliza a edição
+      setEditReview(null);
+      await updateRestaurantAverage(); 
     } catch (err) {
       setError('Erro ao atualizar avaliação.');
     }
-  };
+  };  
 
   const handleDeleteReview = async (reviewId) => {
     try {
@@ -76,10 +78,24 @@ function RestaurantPage() {
       setReviews((prevReviews) =>
         prevReviews.filter((review) => review.id_avaliacao !== reviewId)
       );
+      await updateRestaurantAverage();
     } catch (err) {
       setError('Erro ao deletar avaliação.');
     }
+  };  
+
+  const updateRestaurantAverage = async () => {
+    try {
+      const avgResponse = await axios.get(`http://localhost:4000/restaurants/${id}/avg`);
+      setRestaurant((prevRestaurant) => ({
+        ...prevRestaurant,
+        numero_avaliacoes: avgResponse.data.averageRating || 5,
+      }));
+    } catch (err) {
+      console.error("Erro ao atualizar a média do restaurante.", err);
+    }
   };
+  
 
   if (isLoading) return <p>Carregando...</p>;
   if (error) return <p>{error}</p>;
@@ -87,7 +103,6 @@ function RestaurantPage() {
 
   return (
     <Main>
-      {/* Informações do restaurante */}
       <RestaurantHeader>
         <RestaurantImage src={restaurant.imagem} alt={restaurant.id_restaurante} />
         <RestaurantInfo>
@@ -104,7 +119,6 @@ function RestaurantPage() {
         </RestaurantInfo>
       </RestaurantHeader>
 
-      {/* Menu */}
       <Section>
         <SectionTitle>Menu</SectionTitle>
         {menu.length > 0 ? (
@@ -121,7 +135,6 @@ function RestaurantPage() {
         )}
       </Section>
 
-      {/* Avaliações */}
       <Section>
         <SectionTitle>Avaliações</SectionTitle>
         {user && (
