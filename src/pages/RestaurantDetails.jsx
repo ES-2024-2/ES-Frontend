@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 function RestaurantPage() {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
+  const [menu, setMenu] = useState([]);
   const [reviews, setReviews] = useState([]); 
   const [newReview, setNewReview] = useState({ descricao: '', nota: '' });
   const [error, setError] = useState(null);
@@ -19,8 +20,10 @@ function RestaurantPage() {
         setIsLoading(true);
         const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
         const reviewsResponse = await axios.get(`http://localhost:4000/reviews/restaurant/${id}`);
+        const menuResponse = await axios.get(`http://localhost:4000/menus/${id}`);
         setRestaurant(restaurantResponse.data);
         setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []); 
+        setMenu(Array.isArray(menuResponse.data) ? menuResponse.data : []);
       } catch (err) {
         setError('Erro ao carregar os dados do restaurante.');
       } finally {
@@ -75,7 +78,21 @@ function RestaurantPage() {
           </RestaurantRating>
         </RestaurantInfo>
       </RestaurantHeader>
-
+      <Section>
+        <SectionTitle>Menu</SectionTitle>
+        {menu.length > 0 ? (
+          <MenuList>
+            {menu.map((item) => (
+              <MenuItem key={item.id_menu}>
+                <MenuDescription>{item.descricao_menu}</MenuDescription>
+                <MenuPrice>R$ {item.preco.toFixed(2)}</MenuPrice>
+              </MenuItem>
+            ))}
+          </MenuList>
+        ) : (
+          <NoMenuMessage>Esse restaurante ainda não possui um menu cadastrado.</NoMenuMessage>
+        )}
+      </Section>
       <Section>
         <SectionTitle>Avaliações</SectionTitle>
         {user && (
@@ -117,7 +134,6 @@ function RestaurantPage() {
           <NoReviewsMessage>Esse restaurante ainda não possui avaliações.</NoReviewsMessage>
         )}
       </Section>
-
     </Main>
   );
 }
@@ -189,7 +205,7 @@ const Section = styled.section`
   background-color: white;
   border-radius: 0.5rem;
   padding: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 `;
 
 const SectionTitle = styled.h2`
@@ -258,4 +274,31 @@ const ReviewRating = styled.div`
 
 const ReviewText = styled.p`
   color: #6b7280;
+`;
+
+const MenuItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.5rem 0;
+`;
+
+const MenuDescription = styled.span`
+  font-size: 1rem;
+  color: #1f2937;
+`;
+
+const MenuPrice = styled.span`
+  font-size: 1rem;
+  color: #6b7280;
+`;
+
+const NoMenuMessage = styled.p`
+  font-size: 1rem;
+  color: #6b7280;
+  text-align: center;
+`;
+const MenuList = styled.ul`
+  list-style: none;
+  padding: 0;
 `;
