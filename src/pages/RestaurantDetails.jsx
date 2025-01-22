@@ -15,15 +15,16 @@ function RestaurantPage() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useContext(AuthContext);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     async function fetchRestaurant() {
       try {
         setIsLoading(true);
-        const restaurantResponse = await axios.get(`http://localhost:4000/restaurants/${id}`);
-        const reviewsResponse = await axios.get(`http://localhost:4000/reviews/restaurant/${id}`);
-        const menuResponse = await axios.get(`http://localhost:4000/menus/${id}`);
-        const avgResponse = await axios.get(`http://localhost:4000/restaurants/${id}/avg`);
+        const restaurantResponse = await axios.get(`${apiUrl}/restaurants/${id}`);
+        const reviewsResponse = await axios.get(`${apiUrl}/reviews/restaurant/${id}`);
+        const menuResponse = await axios.get(`${apiUrl}/menus/${id}`);
+        const avgResponse = await axios.get(`${apiUrl}/restaurants/${id}/avg`);
         setRestaurant({
           ...restaurantResponse.data,
           numero_avaliacoes: avgResponse.data.averageRating || 5,
@@ -48,7 +49,7 @@ function RestaurantPage() {
         id_usuario: user.id_usuario,
         id_restaurante: id,
       };
-      await axios.post('http://localhost:4000/reviews', reviewData);
+      await axios.post(`${apiUrl}/reviews`, reviewData);
       setReviews([...reviews, { ...reviewData, nome: user.nome }]);
       setNewReview({ descricao: '', nota: '' });
       await updateRestaurantAverage(); 
@@ -59,7 +60,7 @@ function RestaurantPage() {
   
   const handleUpdateReview = async (reviewId, updatedReview) => {
     try {
-      await axios.put(`http://localhost:4000/reviews/${reviewId}`, updatedReview);
+      await axios.put(`${apiUrl}/reviews/${reviewId}`, updatedReview);
       setReviews((prevReviews) =>
         prevReviews.map((review) =>
           review.id_avaliacao === reviewId ? { ...review, ...updatedReview } : review
@@ -74,7 +75,7 @@ function RestaurantPage() {
 
   const handleDeleteReview = async (reviewId) => {
     try {
-      await axios.delete(`http://localhost:4000/reviews/${reviewId}`);
+      await axios.delete(`${apiUrl}/reviews/${reviewId}`);
       setReviews((prevReviews) =>
         prevReviews.filter((review) => review.id_avaliacao !== reviewId)
       );
@@ -86,7 +87,7 @@ function RestaurantPage() {
 
   const updateRestaurantAverage = async () => {
     try {
-      const avgResponse = await axios.get(`http://localhost:4000/restaurants/${id}/avg`);
+      const avgResponse = await axios.get(`${apiUrl}/restaurants/${id}/avg`);
       setRestaurant((prevRestaurant) => ({
         ...prevRestaurant,
         numero_avaliacoes: avgResponse.data.averageRating || 5,

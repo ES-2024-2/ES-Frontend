@@ -7,13 +7,15 @@ function HomePage() {
   const [restaurants, setRestaurants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     async function fetchRestaurants() {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:4000/restaurants');
+        const response = await axios.get(`${apiUrl}/restaurants`);
         setRestaurants(response.data); 
+        console.log('o que recebeu',response.data);
       } catch (err) {
         setError("Erro ao carregar os dados.");
       } finally {
@@ -26,10 +28,6 @@ function HomePage() {
 
   if (isLoading) {
     return <p>Carregando...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
   }
 
   return (

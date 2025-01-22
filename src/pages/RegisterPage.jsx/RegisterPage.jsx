@@ -15,6 +15,7 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     if (senha !== confirmSenha) {
       setError('As senhas não coincidem.');
@@ -24,7 +25,7 @@ function RegisterPage() {
     try {
       setError('');
       setSuccess('');
-      await axios.post('http://localhost:4000/users', {
+      await axios.post(`${apiUrl}/users`, {
         nome,
         email,
         senha,

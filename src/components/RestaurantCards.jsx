@@ -5,11 +5,12 @@ import axios from "axios";
 
 function RestaurantCard({ id_restaurante, imagem, endereco }) {
   const [averageRating, setAverageRating] = useState(0);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     async function fetchAverageRating() {
       try {
-        const response = await axios.get(`http://localhost:4000/restaurants/${id_restaurante}/avg`);
+        const response = await axios.get(`${apiUrl}/restaurants/${id_restaurante}/avg`);
         setAverageRating(response.data.averageRating || 0);
       } catch (error) {
         console.error("Erro ao carregar a média de avaliações:", error);
