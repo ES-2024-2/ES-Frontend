@@ -1,8 +1,16 @@
-# React + Vite
+# **API para Restaurantes - Engenharia de Software**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Trabalho 1 da disciplina de Engenharia de Software, que consiste em uma API para gerenciamento de restaurantes, menus e avaliações.
 
-Currently, two official plugins are available:
+## **Membros do Grupo**
+- **Danilo Nery Silva de Oliveira** - 221030849  
+- **Gustavo Rinaldi Braga de Albuquerque** - 222008664  
+- **João Pedro Daher Aranha** - 190109742  
+- **Leandro Machado Ribeiro Bottecchia** - 232052432  
+- **Nathalia Pimentel de Assis** - 170153169  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## **Link de Produção**
+A aplicação está disponível em:  
+[https://es-backend-gj6j.onrender.com](https://es-backend-gj6j.onrender.com)
+
+---
